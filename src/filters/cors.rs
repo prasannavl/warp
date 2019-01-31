@@ -200,7 +200,7 @@ where
     F: Filter + Clone + Send + Sync + 'static,
     F::Extract: Reply,
     F::Error: CombineRejection<Rejection>,
-    <F::Error as CombineRejection<Rejection>>::Rejection: CombineRejection<Rejection>,
+    <F::Error as CombineRejection<Rejection>>::One: CombineRejection<Rejection>,
 {
     type Wrapped = CorsFilter<F>;
 
@@ -379,7 +379,7 @@ mod internal {
     {
         type Extract =
             One<Either<One<Preflight>, One<Either<One<Wrapped<F::Extract>>, F::Extract>>>>;
-        type Error = <F::Error as CombineRejection<Rejection>>::Rejection;
+        type Error = <F::Error as CombineRejection<Rejection>>::One;
         type Future = future::Either<
             future::FutureResult<Self::Extract, Self::Error>,
             WrappedFuture<F::Future>,
@@ -461,7 +461,7 @@ mod internal {
         F::Error: CombineRejection<Rejection>,
     {
         type Item = One<Either<One<Preflight>, One<Either<One<Wrapped<F::Item>>, F::Item>>>>;
-        type Error = <F::Error as CombineRejection<Rejection>>::Rejection;
+        type Error = <F::Error as CombineRejection<Rejection>>::One;
 
         fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
             let inner = try_ready!(self.inner.poll());
